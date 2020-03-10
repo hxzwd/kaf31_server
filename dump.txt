@@ -1,0 +1,15 @@
+b*Hold[D[Abs[q[x, t]]^2, {x, 2}]]*q[x, t]
+I*Derivative[0, 1][q][x, t] + I*a1*Derivative[1, 0][q][x, t] + 
+ a2*Derivative[2, 0][q][x, t] + I*a3*Derivative[3, 0][q][x, t] + 
+ a4*Derivative[4, 0][q][x, t] + I*a5*Derivative[5, 0][q][x, t] + 
+ a6*Derivative[6, 0][q][x, t]
+{DQ, DT}
+{DQ[n_] := Nest[DX, q[x, t], n], DT[n_] := D[q[x, t], {t, n}]}
+b*Hold[D[Abs[q[x, t]]^2, {x, 2}]]*q[x, t] + I*Derivative[0, 1][q][x, t] + 
+ I*a1*Derivative[1, 0][q][x, t] + a2*Derivative[2, 0][q][x, t] + 
+ I*a3*Derivative[3, 0][q][x, t] + a4*Derivative[4, 0][q][x, t] + 
+ I*a5*Derivative[5, 0][q][x, t] + a6*Derivative[6, 0][q][x, t]
+tmp[x_, t_] := y[x - C0*t]*Exp[I*(k*x - omega*t - k*x0)]
+Element[k, Reals] && Element[x, Reals] && Element[x0, Reals] && 
+ Element[omega, Reals] && Element[y, Reals]
+$Assumptions = Fold[And, Map[(Element[#1, Reals])&, { k, x, x0, omega, y }]]
