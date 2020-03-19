@@ -172,6 +172,17 @@ FEXP0[sol_, sub_] := Module[ { res, cc },
 
 ];
 
+(*
+FEXP2[sl_, t_] := Module[ { res },
+
+	res = t;
+
+	For[i = 1, i <= Length[sl], i++,
+		res = FEXP0[t, sl[[i]]];
+
+];
+*)
+
 FEXP1[ll_] := Module[ { res, hcoeff, cc, subs },
 
 	res = <| |>;
@@ -215,11 +226,10 @@ fMakeEqs[sys_] := Module[ { eqs },
 	eqs
 ];
 
-fCheck
 
 fGetSeriesCoeffs[coefflist_, p_] := Module[ { res, targets, eqs, fsaRes, values, fexp1res },
 
-	coefflist = coefflist[[ 1;;p ]];
+	coefflist = coefflist[[ 1;;p + 1 ]];
 	eqs = fMakeEqs[coefflist];
 	targets = fGenSeriesCoeffs[p];
 	targets = Reverse[targets];
@@ -227,7 +237,7 @@ fGetSeriesCoeffs[coefflist_, p_] := Module[ { res, targets, eqs, fsaRes, values,
 	res = <| |>;
 	fsaRes = <| |>;
 
-	For[i = 1, i <= p, i++,
+	For[i = 1, i <= p + 1, i++,
 		fsaRes = FSA[eqs, i];
 		values = fsaRes["joined values"];
 	
