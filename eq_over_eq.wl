@@ -276,8 +276,73 @@ fDebugAddObj[key_, obj_] := Module[ {},
 
 
 
+ALG[coeffs_] := Module[ { res, currA, tailB, B, resB, R },
 
-drun[] := Module[ { NN, tmp, eqInfo, eq, p, tmp0, finalEq, paramSys, tmp1, tmp2 },
+	res = { };
+
+	If[ Length[coeffs] == 1,
+		res = Map[({ #1 })&, coeffs[[1]]];
+		Return[res]
+	];
+
+
+	For[ i = 1, i <= Length[coeffs[[1]]], i++,
+	
+		currA = coeffs[[1]][[i]];
+		tailB = coeffs[[2;;]];
+
+		B = tailB/.currA;
+		Print[B];
+		resB = ALG[B];
+
+		Print["i = ", i, "\tresB = \n", resB, "\n"];
+		(*R = Map[(Join[{ { currA } }, #1])&, resB];*)
+
+
+		R = Map[(Prepend[#1, currA])&, resB];
+		Print["R = \n", R];
+
+		(*res = Join[res, R];*)
+		res = Join[res, R];
+
+		
+	];
+	(*res*)
+	Return[res];
+	res
+
+];
+
+
+
+GETPARAMS[SYS_, SOLSTREE_, P_, PARAMS_] := Module[ { res, targetSys, subsys, eqsys, finparams },
+
+	res = <| |>;
+
+	targetSys = SYS[[P + 2;;]];
+
+	(*subsys = targetSys/.SOLSTREE;*)
+	(*subsys = targetSys;*)
+
+	subsys = Simplify[targetSys/.SOLSTREE];
+
+	eqsys = Map[(Map[Function[{x}, x == 0], #1])&, subsys];
+
+	(*eqsys = Map[Function[ { psys }, Map[(#1 == 0)&, Simplify[psys/.SOLSTREE]]], subsys];*)
+
+	finparams = Map[(Solve[#1, PARAMS])&, eqsys];
+
+	res["final params"] = finparams;
+	res["target coeffs"] = targetSys;
+	res["eqs systems"] = eqsys;
+
+	Return[res];
+
+	res
+
+];
+
+drun[] := Module[ { NN, tmp, eqInfo, eq, p, tmp0, finalEq, paramSys, tmp1, tmp2, cclist, pres },
 
 
 	(*Get["drun.wl"];*)
@@ -311,6 +376,15 @@ drun[] := Module[ { NN, tmp, eqInfo, eq, p, tmp0, finalEq, paramSys, tmp1, tmp2 
 	$var["f add"]["tmp", tmp];
 	$var["f add"]["p", p];
 
+
+	cclist = Values[tmp2];
+	solstree = ALG[cclist];
+	$var["f add"]["solstree", solstree];
+
+	pres = GETPARAMS[paramSys, solstree, p, { sigma, b, C1 }];
+	$var["f add"]["pres", pres];
+	
+
 	$var["join"][];
 
 	tmp2
@@ -333,3 +407,11 @@ tmp2 = $var["tmp2"];
 eq = $var["eq"];
 p = $var["p"];
 eqinfo = $var["eqInfo"];
+
+solstree = $var["solstree"];
+pres = $var["pres"];
+
+finalParams = pres["final params"];
+
+Print["\n\nFINAL PARAMS:\n\n", finalParams];
+
