@@ -1,6 +1,49 @@
 
 
 
+fGetTargetEq[] := Module[ { res, params, targetEq, poleOrder },
+
+	res = <| |>;
+
+
+
+	(*REq*)
+	(*{ alpha, gamma }*)
+	params = { alpha, beta, gamma };
+	solveparams = { alpha, gamma };
+	poleOrder = 2;
+	targetEq =
+		D[y[z], {z, 1}]^2 - 4*y[z]^3 -
+		alpha*y[z]^2 - beta*y[z] - gamma;
+
+
+	(*ksEq*)
+	(*{ sigma, b, C1 }*)
+	params = { sigma, C0, C1 };
+	solveparams = { sigma, b, C1 };
+	poleOrder = 3;
+	targetEq =
+		D[y[z], {z, 3}] + sigma*D[y[z], {z, 2}] +
+		D[y[z], {z, 1}] + y[z]^2/2 - C0*y[z] + C1;
+
+
+
+
+	res["target equation"] = targetEq;
+	res["pole order"] = poleOrder;
+	res["list of params"] = params;
+	res["restrict via params"] = solveparams;
+
+	res["eq"] = res["target equation"];
+	res["p"] = res["pole order"];
+	res["params"] = res["list of params"];
+	res["solveparams"] = res["restrict via params"];
+
+	res
+
+];
+
+
 fGetEq[eq_, subs_] := Module[ { res },
 
 	res = D[eq, { z, 1 }]/.subs;
@@ -28,28 +71,6 @@ fGenSubs[NN_] := Module[ { res },
 	res
 ];
 
-fGetTargetEq[] := Module[ { res, params, targetEq, poleOrder },
-
-	res = <| |>;
-
-	params = { sigma, C0, C1 };
-	poleOrder = 3;
-	targetEq =
-		D[y[z], {z, 3}] + sigma*D[y[z], {z, 2}] +
-		D[y[z], {z, 1}] + y[z]^2/2 - C0*y[z] + C1;
-
-	res["target equation"] = targetEq;
-	res["pole order"] = poleOrder;
-	res["list of params"] = params;
-
-	res["eq"] = res["target equation"];
-	res["p"] = res["pole order"];
-	res["params"] = res["list of params"];
-
-
-	res
-
-];
 
 fGenSeriesCoeffs[p_] := Module[ { res },
 
@@ -207,7 +228,8 @@ FSA[eqs_, index_] := Module[ { res, coeff, eq, csol, jsol },
 	coeff = ToExpression[StringTemplate["A``"][p - index + 1]];
 	csol = Solve[eq, coeff];
 	jsol = Join@@csol;
-	jsol = Cases[jsol, Except[coeff -> 0]];
+
+	(*jsol = Cases[jsol, Except[coeff -> 0]];*)
 	
 	res["coeff value"] = csol;
 	res["coeff"] = coeff;
@@ -227,7 +249,7 @@ fMakeEqs[sys_] := Module[ { eqs },
 ];
 
 
-fGetSeriesCoeffs[coefflist_, p_] := Module[ { res, targets, eqs, fsaRes, values, fexp1res },
+fGetSeriesCoeffs[coefflist_, p_] := Module[ { res, targets, eqs, fsaRes, values, fexp1res, hcoeff, hctmp },
 
 	coefflist = coefflist[[ 1;;p + 1 ]];
 	eqs = fMakeEqs[coefflist];
@@ -245,6 +267,11 @@ fGetSeriesCoeffs[coefflist_, p_] := Module[ { res, targets, eqs, fsaRes, values,
 	];
 
 	fexp1res = FEXP1[res];
+	
+	hcoeff = Keys[res][[1]];
+	hctmp = { };
+	res[hcoeff] = Cases[res[hcoeff], Except[hcoeff -> 0]];
+	
 
 	res
 
@@ -354,6 +381,8 @@ drun[] := Module[ { NN, tmp, eqInfo, eq, p, tmp0, finalEq, paramSys, tmp1, tmp2,
 	eqInfo = fGetTargetEq[];
 	eq = eqInfo["eq"];
 	p = eqInfo["p"];
+	solveparams = eqInfo["solveparams"];
+
 
 	tmp0 = fSubYSeries[ eq, p ];
 
@@ -375,13 +404,27 @@ drun[] := Module[ { NN, tmp, eqInfo, eq, p, tmp0, finalEq, paramSys, tmp1, tmp2,
 	$var["f add"]["eqInfo", eqInfo];
 	$var["f add"]["tmp", tmp];
 	$var["f add"]["p", p];
+	$var["f add"]["solveparams", solveparams];
 
 
 	cclist = Values[tmp2];
+	solstree = { };
+
 	solstree = ALG[cclist];
+
 	$var["f add"]["solstree", solstree];
 
-	pres = GETPARAMS[paramSys, solstree, p, { sigma, b, C1 }];
+	(*pres = GETPARAMS[paramSys, solstree, p, { sigma, b, C1 }];*)
+
+
+	(*
+	solveparams = { sigma, b, C1 };
+	solveparams = { alpha, gamma };
+	*)
+
+
+	pres = { };
+	pres = GETPARAMS[paramSys, solstree, p, solveparams];
 	$var["f add"]["pres", pres];
 	
 
@@ -407,6 +450,7 @@ tmp2 = $var["tmp2"];
 eq = $var["eq"];
 p = $var["p"];
 eqinfo = $var["eqInfo"];
+solveparams = $var["solveparams"];
 
 solstree = $var["solstree"];
 pres = $var["pres"];
