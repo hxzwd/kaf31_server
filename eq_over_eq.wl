@@ -147,6 +147,10 @@ drun[] := Module[ { NN, tmp, eqInfo, eq, p, tmp0, finalEq, paramSys, tmp1, tmp2,
 
 ];
 
+
+(*ClearAll["Global`*"];*)
+
+
 fInitDebug[];
 $var["eqs data"] = EQSDATA;
 dadd = $var["add"];
@@ -172,4 +176,22 @@ pres = $var["pres"];
 finalParams = pres["final params"];
 
 Print["\n\nFINAL PARAMS:\n\n", finalParams];
+
+
+allSolsCoeffs = Map[(Join[solstree[[1]]/.#1, #1])&, finalParams[[1]]];
+
+simpEqFunc = fGetSimpEqFunc[];
+
+(*simpEqFunc = { Y[z] -> Values[simpEqFunc[[1]]]^(-1) };*)
+
+TT0 = Function[{x}, Evaluate[tmp0["y sub"][x]]];
+TT1 = TT0/.x->z/.simpEqFunc;
+
+SS0 = allSolsCoeffs[[1]];
+
+CC0 = (eq/.SS0)/.y->(TT1/.SS0);
+
+CC1 = Simplify[CC0];
+
+
 

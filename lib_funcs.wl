@@ -52,7 +52,23 @@ fGetTargetEqOld[] := Module[ { res, params, targetEq, poleOrder },
 ];
 
 
+fGetSimpEq[] := Module[ { simpEq },
 
+	simpEq = D[Y[z], { z, 1 }] + Y[z]^2 - b;
+
+	simpEq
+
+];
+
+fGetSimpEqFunc[] := Module[ { simpEq, simpEqFunc },
+
+	simpEq = fGetSimpEq[];
+
+	simpEqFunc = DSolve[simpEq == 0, Y[z], z][[1]]/.C[1]->Csimp;
+
+	simpEqFunc
+
+];
 
 fGetEq[eq_, subs_] := Module[ { res },
 
